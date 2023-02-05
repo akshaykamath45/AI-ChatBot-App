@@ -1,4 +1,5 @@
 import "dart:ui";
+import "package:chatbot/chatmessage.dart";
 import "package:flutter/material.dart";
 import "package:velocity_x/velocity_x.dart";
 
@@ -10,17 +11,31 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
+  final TextEditingController _controller = TextEditingController();
+  final List<ChatMessage> _messages = [];
+
+  void _sendMessage() {
+    ChatMessage _message = ChatMessage(text: _controller.text, sender: "user");
+    setState(() {
+      _messages.insert(0, _message);
+    });
+    _controller.clear();
+  }
+
   Widget _buildTextComposer() {
     return Row(
       children: [
-        const Expanded(
+        Expanded(
           child: TextField(
-            decoration: InputDecoration.collapsed(hintText: "Send a message"),
+            controller: _controller,
+            onSubmitted: (value) => _sendMessage(),
+            decoration:
+                const InputDecoration.collapsed(hintText: "Send a message"),
           ),
         ),
         IconButton(
           icon: const Icon(Icons.send),
-          onPressed: () {},
+          onPressed: () => _sendMessage(),
         ),
       ],
     ).px16();
@@ -30,12 +45,24 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(title: Text("ChatGPT Demo")),
-        body: Column(
-          children: [
-            Container(
-                decoration: BoxDecoration(color: context.cardColor),
-                child: _buildTextComposer())
-          ],
+        body: SafeArea(
+          child: Column(
+            children: [
+              Flexible(
+                child: ListView.builder(
+                  reverse: true,
+                  padding: Vx.m8,
+                  itemCount: _messages.length,
+                  itemBuilder: (context, index) {
+                    return _messages[index];
+                  },
+                ),
+              ),
+              Container(
+                  decoration: BoxDecoration(color: context.cardColor),
+                  child: _buildTextComposer())
+            ],
+          ),
         ));
   }
 }
